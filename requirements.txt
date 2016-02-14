@@ -1,0 +1,4 @@
+mps
+exifread==2.1.2
+pytest
+nose
