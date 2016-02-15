@@ -5,3 +5,6 @@ python:
 install: "pip install -r requirements.txt"
 # command to run tests
 script: nosetests
+addons:
+    code_climate:
+        repo_token: 67581861dff2bd078b68d0e4e35cf4610143396c35149964bb908e6dbd8e3878
