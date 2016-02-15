@@ -1,8 +1,9 @@
-# *-* encoding=UTF8 *-*
+
 import exceptions
 import exifread
 import hashlib
 import os
+
 
 def _get_exif_data(raw_file):
     keys = [
@@ -94,12 +95,11 @@ def _get_md5(raw_data):
 def get_tags(prefix, path):
     assert path.startswith(prefix)
     dirname = os.path.dirname(path)
-    prefix_tags = set(map(lambda x: x.lower(), prefix.decode('UTF8').split('/')))
-    path_tags = set(map(lambda x: x.lower(), dirname.decode('UTF8').split('/')))
-    location = os.path.dirname(path).replace(prefix, '')
+    location = dirname.replace(prefix, '')
     if location.startswith('/'):
         location = location[1:]
-    return {'tags': list(path_tags - prefix_tags),
+    return {'tags': map(lambda x: x.lower(),
+                        location.decode('UTF8').split('/')),
             'basename': os.path.basename(path),
             'location': location}
 
