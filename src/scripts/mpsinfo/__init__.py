@@ -2,11 +2,11 @@
 Module to retrieve auxiliary information from image file.
 """
 from datetime import datetime
+import calendar
 import exceptions
 import hashlib
 import os
 import sys
-import time
 
 import exifread
 import pytz
@@ -148,9 +148,9 @@ def read_info(path):
         if k in result:
             result[key_mapper[k]] = result[k]
             del result[k]
-    timezone = pytz.timezone(TIMEZONE)
+    tzone = pytz.timezone(TIMEZONE)
     date = datetime.strptime(result['datetime'], '%Y:%m:%d %H:%M:%S')
-    result['timestamp'] = time.mktime(timezone.localize(date).timetuple())
+    result['timestamp'] = calendar.timegm(tzone.localize(date).utctimetuple())
     result['width'] = int(result['width'])
     result['height'] = int(result['height'])
     return result
