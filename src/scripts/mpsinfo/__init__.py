@@ -1,14 +1,29 @@
-
+"""
+Module to retrieve auxiliary information from image file.
+"""
+from datetime import datetime
 import exceptions
-import exifread
 import hashlib
 import os
+import sys
+import time
+
+import exifread
+import pytz
+
+_CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(_CURRENT_DIR, '..', '..'))
+from settings import TIMEZONE  # NO LINT
 
 
 def _get_exif_data(raw_file):
+    """
+    :param raw_file: File object to be analyzed.
+    :return: Dictionary that contains exif info of given file.
+    """
     keys = [
         # 'EXIF MakerNote',
-        'GPS GPSDate',
+        # 'GPS GPSDate',
         # 'EXIF ApertureValue',
         # 'MakerNote Tag 0x000E',
         # 'Image ExifOffset',
@@ -21,7 +36,7 @@ def _get_exif_data(raw_file):
         # 'GPS GPSLatitudeRef',
         # 'MakerNote Tag 0x0006',
         # 'GPS GPSAltitudeRef',
-        'Image DateTime',
+        # 'Image DateTime',
         # 'EXIF ShutterSpeedValue',
         # 'EXIF ColorSpace',
         # 'EXIF MeteringMode',
@@ -42,7 +57,7 @@ def _get_exif_data(raw_file):
         'Image Model',
         'EXIF ExifImageLength',
         'EXIF SceneType',
-        'Image ResolutionUnit',
+        # 'Image ResolutionUnit',
         # 'EXIF ExposureTime',
         # 'Thumbnail XResolution',
         # 'GPS GPSDestBearing',
@@ -87,30 +102,55 @@ def _get_exif_data(raw_file):
 
 
 def _get_md5(raw_data):
+    """
+    :param raw_data: bytes to calculate md5 hash.
+    :return: hex representation of md5 hash.
+    """
     md5 = hashlib.md5()
     md5.update(raw_data)
     return {'md5': md5.hexdigest()}
 
 
 def get_tags(prefix, path):
+    """
+    :param prefix: Root path of image storage.
+    :param path: Path to certain file.
+    :return: List that contains dir names in unicode.
+    """
     assert path.startswith(prefix)
     dirname = os.path.dirname(path)
     location = dirname.replace(prefix, '')
     if location.startswith('/'):
         location = location[1:]
-    return {'tags': map(lambda x: x.lower(),
-                        location.decode('UTF8').split('/')),
+    return {'tags': [x.lower() for x in location.decode('UTF8').split('/')],
             'basename': os.path.basename(path),
             'location': location}
 
 
 def read_info(path):
+    """
+    :param path: File to be analyzed
+    :return: Dictionary that contains meta info of given file.
+    """
     if not os.path.exists(path):
         raise exceptions.IOError('No such file or directory: ' + path)
-    with open(path, 'rb') as f:
-        result = _get_exif_data(f)
-        f.seek(0)
-        data = f.read()
+    with open(path, 'rb') as image:
+        result = _get_exif_data(image)
+        image.seek(0)
+        data = image.read()
         result['size'] = len(data)
         result.update(_get_md5(data))
+    key_mapper = {'EXIF DateTimeOriginal': 'datetime',
+                  'EXIF ExifImageWidth': 'width',
+                  'EXIF ExifImageLength': 'height',
+                  'Image Orientation': 'orientation'}
+    for k in key_mapper:
+        if k in result:
+            result[key_mapper[k]] = result[k]
+            del result[k]
+    timezone = pytz.timezone(TIMEZONE)
+    date = datetime.strptime(result['datetime'], '%Y:%m:%d %H:%M:%S')
+    result['timestamp'] = time.mktime(timezone.localize(date).timetuple())
+    result['width'] = int(result['width'])
+    result['height'] = int(result['height'])
     return result
