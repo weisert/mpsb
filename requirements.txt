@@ -1,7 +1,6 @@
 mps
 exifread==2.1.2
 pytest
-nose
 astroid
 pylint
 pytz==2015.7
