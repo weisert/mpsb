@@ -13,7 +13,7 @@ import pytz
 
 _CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(_CURRENT_DIR, '..', '..'))
-from settings import TIMEZONE  # NO LINT
+from settings import TIMEZONE
 
 
 def _get_exif_data(raw_file):

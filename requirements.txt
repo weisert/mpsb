@@ -4,3 +4,5 @@ pytest
 astroid
 pylint
 pytz==2015.7
+flask==0.10.1
+mock==1.3.0
