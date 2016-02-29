@@ -1,14 +1,79 @@
 #!/usr/bin/env python
-"""
+'''
 Script for converting and storing video files.
-"""
-
+'''
 import argparse
 import datetime
 import exceptions
 import os
 import re
+import shutil
 import sys
+
+
+def copy(source, destination):
+    '''
+    Copies file. In case destination directory not exist it is created.
+    :param source: Source filename.
+    :param destination: Destination filename.
+    :return: None.
+    '''
+    destdir = os.path.dirname(destination)
+    if not os.path.exists(destdir):
+        os.makedirs(destdir, mode=0o755)
+    shutil.copy2(source, destination)
+    print 'Copy from: \t' + source + ' to ' + destination
+
+
+def convert_file_nexus5(source, destination):
+    '''
+    Since Nexus5 produces MP4(AAC, H264) this function just copies source file
+    to destionation.
+    :param source: Source filename.
+    :param destination: Destination filename.
+    :return: None.
+    '''
+    copy(source, destination)
+
+
+def convert_file(source, destination, device):
+    '''
+    Converts the given file to MP4(AAC, H264)
+    :param source: Source filename.
+    :param destination: Destination filename.
+    :param device: name of device that shot the video.
+    :return: None.
+    '''
+    if device == 'nexus5':
+        return convert_file_nexus5(source, destination)
+    else:
+        raise exceptions.NotImplementedError('Unknown device: ' + device)
+
+
+def make_job(job, device):
+    '''
+    Copies source file to the reliable storage and makes converted cope for app.
+    :param job: Job description.
+    :param device: name of device that shot the video.
+    :return: None.
+    '''
+    copy(job['from'], job['to'])
+    convert_file(job['from'], job['converted'], device)
+
+
+def check_job(job):
+    '''
+    Checks whenever the job can be done without errors. If any error is found
+    raises exception with error description.
+    :param job: Job description.
+    :return: None.
+    '''
+    if os.path.exists(job['to']):
+        # TODO(weisert): Check file equality.
+        return exceptions.RuntimeError('Target file exists: ' + job['to'])
+    if os.path.exists(job['converted']):
+        return exceptions.RuntimeError('Converted file exists: ' +
+                                       job['converted'])
 
 
 def create_job_description(filename, date, raw_out_dir, converted_out_dir):
@@ -123,12 +188,13 @@ def main():
     jobs = []
     for filename in files:
         date = get_date_for_device(args.device, filename)
-        jobs.append(create_job_description(filename,
-                                           date,
-                                           args.raw_output,
-                                           args.converted_output))
-    print '\n'.join([str(job) for job in jobs])
-    print len(jobs)
+        job = create_job_description(filename, date, args.raw_output,
+                                     args.converted_output)
+        check_job(job)
+        jobs.append(job)
+
+    for job in jobs:
+        make_job(job, args.device)
 
 
 if __name__ == '__main__':
