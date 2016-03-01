@@ -1,6 +1,7 @@
 
 import datetime
 import exceptions
+import json
 import mock
 import pytest
 
@@ -8,12 +9,113 @@ import common
 import import_video
 
 
-# TODO(weisert): test_copy
-# TODO(weisert): test_convert_file_nexus5
-# TODO(weisert): test_convert_file
-# TODO(weisert): test_make_job
-# TODO(weisert): test_check_job
-# TODO(weisert): test_create_job_description
+@mock.patch('os.path.exists')
+@mock.patch('os.makedirs')
+@mock.patch('shutil.copy2')
+def test_copy(copy2, makedirs, exists):
+    exists.return_value = False
+    import_video.copy('/some/file', '/some/folder/file')
+    exists.assert_called_once_with('/some/folder')
+    makedirs.assert_called_once_with('/some/folder', mode=0o755)
+    copy2.assert_called_once_with('/some/file', '/some/folder/file')
+
+
+@mock.patch('import_video.convert_file')
+@mock.patch('import_video.copy')
+def test_make_job(copy, convert_file):
+    job = {'from': '/some/file', 'to': '/raw/out/2016.03.01/file',
+           'converted': '/out/2016.03.01/file'}
+    import_video.make_job(job, 'nexus5')
+    copy.assert_called_once_with('/some/file', '/raw/out/2016.03.01/file')
+    convert_file.assert_called_once_with('/some/file', '/out/2016.03.01/file',
+                                         'nexus5')
+
+
+@mock.patch('os.path.exists')
+def test_check_job(exists):
+    exists.side_effect = [True, False]
+    job = {'from': '/some/file', 'to': '/raw/out/2016.03.01/file',
+           'converted': '/converted/out/2016.03.01/file'}
+    with pytest.raises(exceptions.RuntimeError):
+        import_video.check_job(job)
+    exists.assert_called_once_with('/raw/out/2016.03.01/file')
+    exists.reset_mock()
+
+    exists.side_effect = [False, True]
+    job = {'from': '/some/file', 'to': '/raw/out/2016.03.01/file',
+           'converted': '/converted/out/2016.03.01/file'}
+    with pytest.raises(exceptions.RuntimeError):
+        import_video.check_job(job)
+    exists.has_calls(mock.call('/raw/out/2016.03.01/file'),
+                     mock.call('/converted/out/2016.03.01/file'))
+    assert exists.call_count == 2
+    exists.reset_mock()
+
+    exists.side_effect = [False, False]
+    import_video.check_job(job)  # Not raises
+    exists.has_calls(mock.call('/raw/out/2016.03.01/file'),
+                     mock.call('/converted/out/2016.03.01/file'))
+    assert exists.call_count == 2
+
+
+
+@mock.patch('os.path.exists')
+@mock.patch('os.path.isdir')
+def test_create_job_description(isdir, exists):
+    date = datetime.date(2016, 3, 1)
+    exists.side_effect = [False, True]
+    isdir.side_effect = [True, True]
+    with pytest.raises(exceptions.IOError):
+        import_video.create_job_description('/file', date,
+                                            '/raw/out/', '/converted/out')
+    exists.assert_called_once_with('/raw/out/')
+    assert isdir.call_count == 0
+    exists.reset_mock()
+    isdir.reset_mock()
+
+    exists.side_effect = [True, True]
+    isdir.side_effect = [False, True]
+    with pytest.raises(exceptions.IOError):
+        import_video.create_job_description('/file', date,
+                                            '/raw/out/', '/converted/out')
+    exists.assert_called_once_with('/raw/out/')
+    isdir.assert_called_once_with('/raw/out/')
+    exists.reset_mock()
+    isdir.reset_mock()
+
+    exists.side_effect = [True, False]
+    isdir.side_effect = [True, True]
+    with pytest.raises(exceptions.IOError):
+        import_video.create_job_description('/file', date,
+                                            '/raw/out/', '/converted/out')
+    exists.assert_has_calls([mock.call('/raw/out/'),
+                             mock.call('/converted/out')])
+    assert exists.call_count == 2
+    isdir.assert_called_once_with('/raw/out/')
+    exists.reset_mock()
+    isdir.reset_mock()
+
+    exists.side_effect = [True, True]
+    isdir.side_effect = [True, False]
+    with pytest.raises(exceptions.IOError):
+        import_video.create_job_description('/file', date,
+                                            '/raw/out/', '/converted/out')
+    exists.assert_has_calls([mock.call('/raw/out/'),
+                             mock.call('/converted/out')])
+    assert exists.call_count == 2
+    isdir.assert_has_calls([mock.call('/raw/out/'),
+                            mock.call('/converted/out')])
+    assert isdir.call_count == 2
+    exists.reset_mock()
+    isdir.reset_mock()
+
+    exists.side_effect = [True, True]
+    isdir.side_effect = [True, True]
+    job = import_video.create_job_description('/file', date, '/raw/out/',
+                                              '/converted/out')
+    expected = json.dumps({'from': '/file', 'to': '/raw/out/2016.03.01/file',
+                           'converted': '/converted/out/2016.03.01/file'})
+    assert json.dumps(job) == expected
 
 
 def test_parse_date_nexus5():
