@@ -70,10 +70,10 @@ def check_job(job):
     '''
     if os.path.exists(job['to']):
         # TODO(weisert): Check file equality.
-        return exceptions.RuntimeError('Target file exists: ' + job['to'])
+        raise exceptions.RuntimeError('Target file exists: ' + job['to'])
     if os.path.exists(job['converted']):
-        return exceptions.RuntimeError('Converted file exists: ' +
-                                       job['converted'])
+        raise exceptions.RuntimeError('Converted file exists: ' +
+                                      job['converted'])
 
 
 def create_job_description(filename, date, raw_out_dir, converted_out_dir):
