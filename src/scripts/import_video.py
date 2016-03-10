@@ -10,6 +10,12 @@ import re
 import shutil
 import sys
 
+_CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(_CURRENT_DIR, '..'))
+import settings
+
+log = settings.get_logger('import_video')
+
 
 def copy(source, destination):
     '''
@@ -198,4 +204,9 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    try:
+        returncode = main()
+    except:
+        log.exception('Top level exception.')
+        returncode = 1
+    sys.exit(returncode)
