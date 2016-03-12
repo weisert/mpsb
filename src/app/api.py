@@ -27,7 +27,8 @@ def video():
         links = []
         for basename in entry[2]:
             filename = os.path.join(entry[0], basename)
-            relpath = os.path.relpath(filename, start=settings.VIDEO_FILES_PATH)
+            relpath = os.path.relpath(filename,
+                                      start=settings.VIDEO_FILES_PATH)
             parts = list(urlparse.urlsplit(request.base_url)[:2])
             parts.append(settings.VIDEO_FILES_LOCATION + '/' + relpath)
             parts.extend(['', ''])

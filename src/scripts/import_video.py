@@ -58,7 +58,8 @@ def convert_file(source, destination, device):
 
 def make_job(job, device):
     '''
-    Copies source file to the reliable storage and makes converted cope for app.
+    Copies source file to the reliable storage and makes converted copy for
+    the app.
     :param job: Job description.
     :param device: name of device that shot the video.
     :return: None.
