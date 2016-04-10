@@ -15,7 +15,7 @@ def test_video(walk):
     settings.VIDEO_FILES_LOCATION = '/static/video'
 
     client = application.test_client()
-    resp = client.get('/video/')
+    resp = client.get('/api/video/')
 
     walk.assert_called_with('/some/path')
     assert resp.status_code == 200

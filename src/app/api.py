@@ -14,7 +14,7 @@ import settings
 application = Flask(__name__)
 
 
-@application.route("/video/")
+@application.route("/api/video/")
 def video():
     '''
     Video request handler.
