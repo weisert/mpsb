@@ -28,7 +28,7 @@ def copy(source, destination):
     if not os.path.exists(destdir):
         os.makedirs(destdir, mode=0o755)
     shutil.copy2(source, destination)
-    print 'Copy from: \t' + source + ' to ' + destination
+    log.info('Copy from: \t' + source + ' to ' + destination)
 
 
 def convert_file_nexus5(source, destination):
