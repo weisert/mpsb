@@ -17,3 +17,14 @@ def test_get_video_files_list(walk):
     assert len(expected) == len(actual)
     for index in xrange(len(expected)):
         assert expected[index] == actual[index]
+
+
+@patch('subprocess.check_call')
+def test_check_ffmpeg(check_call):
+    check_call.return_value = ''
+    assert cvt.check_ffmpeg()
+    check_call.assert_called_once_with(['ffmpeg', '-version'])
+    check_call.reset_mock()
+    check_call.side_effect = Exception('No ffmpeg')
+    assert not cvt.check_ffmpeg()
+    check_call.assert_called_once_with(['ffmpeg', '-version'])
