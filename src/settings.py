@@ -15,6 +15,14 @@ VIDEO_FILES_LOCATION = ''
 CONSOLE_LOGGING_LEVEL = logging.CRITICAL
 FILE_LOGGING_LEVEL = logging.DEBUG
 
+# Time point to create thumbnail. Must be less than 60 seconds.
+THUMBNAIL_TIMESTAMP_IN_SECONDS = 2
+THUMBNAIL_WIDTH = 320
+THUMBNAIL_HEIGHT = 240
+THUMBNAIL_FILES_PATH = ''
+CREATE_NEW_POLICY, ADD_NEW_POLICY = range(1,3)
+THUMBNAIL_FILES_CREATION_POLICY = CREATE_NEW_POLICY
+
 
 def get_logger(process_type):
     logger = logging.getLogger(process_type)
