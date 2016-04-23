@@ -32,6 +32,8 @@ def get_video_files_list(path):
 
 
 def create_thumbnail(video_file_path, thumbnail_path):
+    log.info('Creating thumbnail \'{}\' for \'{}\'... '.format(thumbnail_path,
+                                                               video_file_path))
     try:
         sec = settings.THUMBNAIL_TIMESTAMP_IN_SECONDS
         assert  60 > sec > 0
@@ -41,10 +43,11 @@ def create_thumbnail(video_file_path, thumbnail_path):
         assert height > 0
         command = ['ffmpeg', '-i', video_file_path, '-ss',
                    '00:00:{0:02d}'.format(sec), '-vframes', '1', '-vf',
-                   'scale="\'if(gt(a,4/3),{},-1)\':\'if(gt(a,4/3),-1,{})\'"'.format(
+                   'scale=\'if(gt(a,4/3),{},-1)\':\'if(gt(a,4/3),-1,{})\''.format(
                        width, height), thumbnail_path]
         log.info('Run: ', ' '.join(command))
         subprocess.check_call(command)
+        log.info('... success!')
     except Exception:
         log.exception('Failed to create thumbnail for {}'.format(video_file_path))
         return False
@@ -63,9 +66,9 @@ def main():
         log.error('No ffmpeg executable found.')
         return 1
     if settings.THUMBNAIL_FILES_CREATION_POLICY == settings.CREATE_NEW_POLICY:
-        shutil.rmtree(settings.THUMBNAIL_FILES_PATH)
+        shutil.rmtree(settings.THUMBNAIL_FILES_PATH, True)
     result = 0
-    files = get_video_files_list(settings.VIDEO_FILES_LOCATION)
+    files = get_video_files_list(settings.VIDEO_FILES_PATH)
     for video_file in files:
         thumbnail_file = get_thumbnail_filename_for(video_file)
         if os.path.exists(thumbnail_file):

@@ -45,7 +45,7 @@ def test_create_thumbnail(check_call):
         '-vframes',
         '1',
         '-vf',
-        'scale="\'if(gt(a,4/3),320,-1)\':\'if(gt(a,4/3),-1,240)\'"',
+        'scale=\'if(gt(a,4/3),320,-1)\':\'if(gt(a,4/3),-1,240)\'',
         'output_320x240_boxed.png'])
     check_call.reset_mock()
     check_call.side_effect = Exception('No ffmpeg')
@@ -60,5 +60,5 @@ def test_create_thumbnail(check_call):
         '-vframes',
         '1',
         '-vf',
-        'scale="\'if(gt(a,4/3),320,-1)\':\'if(gt(a,4/3),-1,240)\'"',
+        'scale=\'if(gt(a,4/3),320,-1)\':\'if(gt(a,4/3),-1,240)\'',
         'output_320x240_boxed.png'])
