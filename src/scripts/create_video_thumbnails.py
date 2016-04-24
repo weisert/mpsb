@@ -73,7 +73,10 @@ def main():
         thumbnail_file = get_thumbnail_filename_for(video_file)
         if os.path.exists(thumbnail_file):
             continue
-        os.makedirs(os.path.dirname(thumbnail_file), 0755)
+        try:
+            os.makedirs(os.path.dirname(thumbnail_file), 0755)
+        except:
+            log.exception('os.makedirs ' + os.path.dirname(thumbnail_file))
         if not create_thumbnail(video_file, thumbnail_file):
             result = 1
     return result
