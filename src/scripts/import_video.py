@@ -12,9 +12,9 @@ import sys
 
 _CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(_CURRENT_DIR, '..'))
-import settings
+import settings  # pylint: disable=import-error, wrong-import-position
 
-log = settings.get_logger('import_video')
+log = settings.get_logger('import_video')  # pylint: disable=invalid-name
 
 
 def copy(source, destination):
@@ -206,8 +206,8 @@ def main():
 
 if __name__ == '__main__':
     try:
-        returncode = main()
-    except:
+        EXIT_CODE = main()
+    except Exception:  # pylint: disable=broad-except
         log.exception('Top level exception.')
-        returncode = 1
-    sys.exit(returncode)
+        EXIT_CODE = 1
+    sys.exit(EXIT_CODE)

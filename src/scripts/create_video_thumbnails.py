@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+'''
+Creates image with size settings.THUMBNAIL_WIDTH, settings.THUMBNAIL_HEIGHT for
+each video file.
+'''
 
 import os
 import shutil
@@ -7,20 +11,29 @@ import sys
 
 _CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(_CURRENT_DIR, '..'))
-import settings
+import settings  # pylint: disable=import-error, wrong-import-position
 
-log = settings.get_logger('create_video_thumbnails')
+log = settings.get_logger('create_video_thumbnails')  # pylint: disable=invalid-name
 
 
 def check_ffmpeg():
+    '''
+    Checks that ffmpeg is available.
+    :return: True if ffmpeg has been found, False otherwise.
+    '''
     try:
         subprocess.check_call(['ffmpeg', '-version'])
-    except Exception:
+    except subprocess.CalledProcessError:
         return False
     return True
 
 
 def get_video_files_list(path):
+    '''
+    Creates list of video files.
+    :param path: Root path to find video files.
+    :return: List of full paths to found video files.
+    '''
     entries = []
     for entry in os.walk(path):
         if not entry[2]:  # there is no file
@@ -32,29 +45,42 @@ def get_video_files_list(path):
 
 
 def create_thumbnail(video_file_path, thumbnail_path):
-    log.info('Creating thumbnail \'{}\' for \'{}\'... '.format(thumbnail_path,
-                                                               video_file_path))
+    '''
+    Creates thumbnail for video.
+    :param video_file_path: Full path to video file.
+    :param thumbnail_path: Full path to thumbnail.
+    :return: True on success, False otherwise.
+    '''
+    log.info('Creating thumbnail \'{}\' for \'{}\'... '.format(
+        thumbnail_path, video_file_path))
     try:
         sec = settings.THUMBNAIL_TIMESTAMP_IN_SECONDS
-        assert  60 > sec > 0
+        assert 60 > sec > 0
         width = settings.THUMBNAIL_WIDTH
         assert width > 0
         height = settings.THUMBNAIL_HEIGHT
         assert height > 0
-        command = ['ffmpeg', '-i', video_file_path, '-ss',
-                   '00:00:{0:02d}'.format(sec), '-vframes', '1', '-vf',
-                   'scale=\'if(gt(a,4/3),{},-1)\':\'if(gt(a,4/3),-1,{})\''.format(
-                       width, height), thumbnail_path]
+        command = [
+            'ffmpeg', '-i', video_file_path, '-ss',
+            '00:00:{0:02d}'.format(sec), '-vframes', '1', '-vf',
+            'scale=\'if(gt(a,4/3),{},-1)\':\'if(gt(a,4/3),-1,{})\''.format(
+                width, height),
+            thumbnail_path]
         log.info('Run: ', ' '.join(command))
         subprocess.check_call(command)
         log.info('... success!')
-    except Exception:
-        log.exception('Failed to create thumbnail for {}'.format(video_file_path))
+    except subprocess.CalledProcessError:
+        log.exception('Failed to create thumbnail for {}'.format(
+            video_file_path))
         return False
     return True
 
 
 def get_thumbnail_filename_for(video_file):
+    '''
+    :param video_file: Full path to video file.
+    :return: Full path to thumbnail to be created.
+    '''
     relpath = os.path.relpath(video_file,
                               start=settings.VIDEO_FILES_PATH)
     relpath = os.path.splitext(relpath)[0]  # remove extension
@@ -62,6 +88,10 @@ def get_thumbnail_filename_for(video_file):
 
 
 def main():
+    '''
+    Does whole job.
+    :return: Exit code.
+    '''
     if not check_ffmpeg():
         log.error('No ffmpeg executable found.')
         return 1
@@ -75,7 +105,7 @@ def main():
             continue
         try:
             os.makedirs(os.path.dirname(thumbnail_file), 0755)
-        except:
+        except OSError:
             log.exception('os.makedirs ' + os.path.dirname(thumbnail_file))
         if not create_thumbnail(video_file, thumbnail_file):
             result = 1
@@ -84,8 +114,8 @@ def main():
 
 if __name__ == '__main__':
     try:
-        returncode = main()
-    except:
+        EXIT_CODE = main()
+    except Exception:  # pylint: disable=broad-except
         log.exception('Top level exception.')
-        returncode = 1
-    sys.exit(returncode)
+        EXIT_CODE = 1
+    sys.exit(EXIT_CODE)

@@ -1,5 +1,6 @@
 
 import common
+import subprocess
 import create_video_thumbnails as cvt
 from mock import patch
 
@@ -26,7 +27,7 @@ def test_check_ffmpeg(check_call):
     assert cvt.check_ffmpeg()
     check_call.assert_called_once_with(['ffmpeg', '-version'])
     check_call.reset_mock()
-    check_call.side_effect = Exception('No ffmpeg')
+    check_call.side_effect = subprocess.CalledProcessError(1, 'ffmpeg')
     assert not cvt.check_ffmpeg()
     check_call.assert_called_once_with(['ffmpeg', '-version'])
 
@@ -48,7 +49,7 @@ def test_create_thumbnail(check_call):
         'scale=\'if(gt(a,4/3),320,-1)\':\'if(gt(a,4/3),-1,240)\'',
         'output_320x240_boxed.png'])
     check_call.reset_mock()
-    check_call.side_effect = Exception('No ffmpeg')
+    check_call.side_effect = subprocess.CalledProcessError(1, 'ffmpeg')
     assert not cvt.create_thumbnail('VID_20160415_223123.mp4',
                                     'output_320x240_boxed.png')
     check_call.assert_called_once_with([
