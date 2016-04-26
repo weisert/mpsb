@@ -9,9 +9,9 @@ from flask import Flask, Response, request
 
 _CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(_CURRENT_DIR, '..'))
-import settings
+import settings  # pylint: disable=wrong-import-position
 
-application = Flask(__name__)
+application = Flask(__name__)  # pylint: disable=invalid-name
 
 
 @application.route("/api/video/")
@@ -24,7 +24,7 @@ def video():
     for entry in os.walk(settings.VIDEO_FILES_PATH):
         if not entry[2]:  # there is no file
             continue
-        links = []
+        date = os.path.basename(entry[0])
         for basename in entry[2]:
             filename = os.path.join(entry[0], basename)
             relpath = os.path.relpath(filename,
@@ -32,8 +32,12 @@ def video():
             parts = list(urlparse.urlsplit(request.base_url)[:2])
             parts.append(settings.VIDEO_FILES_LOCATION + '/' + relpath)
             parts.extend(['', ''])
-            links.append(urlparse.urlunsplit(parts))
-        entries.append({'name': os.path.basename(entry[0]), 'files': links})
+            url = urlparse.urlunsplit(parts)
+            parts[2] = settings.THUMBNAIL_FILES_LOCATION + '/'
+            parts[2] += os.path.splitext(relpath)[0] + '.png'
+            thumbnail = urlparse.urlunsplit(parts)
+            entries.append({'date': date, 'url': url, 'thumbnail': thumbnail})
+    entries.sort(reverse=True, key=lambda x: x['date'])
 
     response = Response()
     response.headers['Content-Type'] = 'application/json'

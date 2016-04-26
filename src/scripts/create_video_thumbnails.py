@@ -66,12 +66,11 @@ def create_thumbnail(video_file_path, thumbnail_path):
             'scale=\'if(gt(a,4/3),{},-1)\':\'if(gt(a,4/3),-1,{})\''.format(
                 width, height),
             thumbnail_path]
-        log.info('Run: ', ' '.join(command))
+        log.info('Run: %s', ' '.join(command))
         subprocess.check_call(command)
         log.info('... success!')
     except subprocess.CalledProcessError:
-        log.exception('Failed to create thumbnail for {}'.format(
-            video_file_path))
+        log.exception('Failed to create thumbnail for %s', video_file_path)
         return False
     return True
 
