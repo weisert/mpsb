@@ -6,6 +6,8 @@
 
 [![Issue Count](https://codeclimate.com/github/weisert/mpsb/badges/issue_count.svg)](https://codeclimate.com/github/weisert/mpsb)
 
+[![Coverage Status](https://coveralls.io/repos/github/weisert/mpsb/badge.svg)](https://coveralls.io/github/weisert/mpsb)
+
 Copyright (c) 2016, Igor Vayzert <igor.weisert@gmail.com>
 
 This is a backend part of my photo storage site.
