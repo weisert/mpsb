@@ -6,12 +6,14 @@ CONF_DIR="/etc/nginx/sites-available"
 ENABLED_DIR="/etc/nginx/sites-enabled"
 UWSGI_CONF_DIR="/etc/uwsgi/apps-available"
 UWSGI_ENABLED_DIR="/etc/uwsgi/apps-enabled"
+VIDEO_DIR="/home/weisert/video_converted"
 
-apt-get install nginx uwsgi
+apt-get install nginx uwsgi uwsgi-plugin-python ffmpeg
 
 mkdir -p ${SHARE}/${HOST}/www
-mkdir -p ${SHARE}/${HOST}/video
+ln -s ${VIDEO_DIR} ${SHARE}/${HOST}/video
 mkdir -p ${SHARE}/${HOST}/static
+chown -R www-data:www-data ${SHARE}/${HOST}
 
 cat > ${CONF_DIR}/${HOST} << EOL
 server {
