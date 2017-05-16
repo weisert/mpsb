@@ -1,0 +1,12 @@
+
+# Source paths that contain photos:
+
+source_paths:
+    - '/home/raid/weisert/photo_to_sort'
+
+# MongoDB address and port:
+
+mongodb:
+    address: 127.0.0.1
+    port: 27017
+
