@@ -19,7 +19,8 @@ def test_dict():
     assert info['Image Model'] == 'Nexus 5'
     assert info['datetime'] == '2016:02:14 23:17:20'
     assert info['height'] == 720
-    assert info['md5'] == '1f92dd4c463ac03beb8b4838eb96e352'
+    assert info['sha384'] == 'aac6fdeda227d7386569413f7f3a00cfacd040b89277243d' \
+                             '451dad76337358fc7e0209f325f37ab42aad09878a71fdbe'
     assert info['orientation'] == 'Horizontal (normal)'
     assert info['size'] == os.stat(test_filename).st_size
     assert round(info['timestamp'] - 1455470240, 5) == 0

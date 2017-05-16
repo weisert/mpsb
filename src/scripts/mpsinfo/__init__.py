@@ -101,14 +101,13 @@ def _get_exif_data(raw_file):
     return {k: str(v) for k, v in tags.items() if k in keys}
 
 
-def _get_md5(raw_data):
+def _get_sha384(raw_data):
     """
-    :param raw_data: bytes to calculate md5 hash.
-    :return: hex representation of md5 hash.
+    :param raw_data: bytes to calculate sha384 hash.
+    :return: hex representation of sha384 hash.
     """
-    md5 = hashlib.md5()
-    md5.update(raw_data)
-    return {'md5': md5.hexdigest()}
+    sha384 = hashlib.sha384(raw_data)
+    return {'sha384': sha384.hexdigest()}
 
 
 def get_tags(prefix, path):
@@ -139,7 +138,7 @@ def read_info(path):
         image.seek(0)
         data = image.read()
         result['size'] = len(data)
-        result.update(_get_md5(data))
+        result.update(_get_sha384(data))
     key_mapper = {'EXIF DateTimeOriginal': 'datetime',
                   'EXIF ExifImageWidth': 'width',
                   'EXIF ExifImageLength': 'height',
